@@ -1,11 +1,19 @@
 use std::fs;
+use std::collections::HashMap;
 
 fn main() {
     let file = fs::read_to_string("src/scratchcards.txt").unwrap();
     let cards: Vec<&str> = file.split("\n").filter(|&c| !c.is_empty()).collect();
 
-    let mut total: u32 = 0;
-    for card in cards.iter() {
+    let mut total_cards: u64 = 0;
+    let mut total_score: u32 = 0;
+    let mut copies: HashMap<u32, u32> = HashMap::new();
+
+    for c in 0..cards.len() {
+        copies.insert(c as u32, 1);
+    }
+
+    for (card_index, card) in cards.iter().enumerate() {
         let mut winning_numbers: Vec<u8> = Vec::new();
         let mut elf_numbers: Vec<u8> = Vec::new();
 
@@ -32,6 +40,7 @@ fn main() {
         }
 
         let mut score: u16 = 0;
+        let mut matches: u8 = 0;
         for entry in elf_numbers.iter() {
             if winning_numbers.contains(entry) {
                 if score == 0 {
@@ -39,12 +48,23 @@ fn main() {
                 } else {
                     score *= 2;
                 }
+
+                matches += 1;
             }
         }
 
-        total += score as u32;
+        total_score += score as u32;
+
+        for _ in 0..(*copies.get(&(card_index as u32)).unwrap() as usize) {
+            for m in 0..matches {
+                copies.insert((card_index + m as usize + 1) as u32, (copies.get(&((card_index + m as usize + 1) as u32)).unwrap() + 1) as u32);
+            }
+        }
+
+        total_cards += *copies.get(&(card_index as u32)).unwrap() as u64;
     }
 
-    println!("{}", total);
+    println!("Part 1: {}", total_score);
+    println!("Part 2: {}", total_cards);
 }
 
