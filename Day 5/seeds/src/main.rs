@@ -16,10 +16,13 @@ fn main() {
         // Record initial seeds.
         if line.contains("seeds") {
             let raw_data: Vec<&str> = line.split(":").collect::<Vec<&str>>()[1].split(" ").filter(|&s| !s.is_empty()).collect();
-            for seed in raw_data.iter() {
-                let seed_as_int = seed.parse::<u64>().unwrap();
-                seed_locations.insert(seed_as_int, seed_as_int);
-                info_modified_for_current_map.insert(seed_as_int, false);
+            for i in (0..(raw_data.len() / 2)).step_by(2) {
+                let start = raw_data.get(i).unwrap().parse::<u64>().unwrap();
+                let end = raw_data.get(i + 1).unwrap().parse::<u64>().unwrap();
+                for j in 0..end {
+                    seed_locations.insert(start + j, start + j);
+                    info_modified_for_current_map.insert(start + j, false);
+                }
             }
 
             continue;
