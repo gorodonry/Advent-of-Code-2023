@@ -13,3 +13,5 @@ Day 3 - whatever I did I couldn't get rust working for whatever reason, so did i
 Day 4 was a lot of fun... part 2 takes my computer a hot second though.
 
 Day 5 solution for part 1 worked first try :D My first attempt at part 2 used over 70GB of RAM and froze my laptop B) Genuinely quite proud of my solutions for the past two days though.
+
+Day 6. I keep being interrupted by dinner just when the problems are released. Pretty funny tbh.
