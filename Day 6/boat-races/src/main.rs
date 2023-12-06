@@ -20,8 +20,6 @@ fn main() {
             times_and_records.insert(times[i].parse::<u16>().unwrap(), distances[i].parse::<u16>().unwrap());
         }
 
-        println!("{}", raw_record_data);
-
         part_two_time = raw_time_data.split(" ")
             .filter(|&ts| !ts.is_empty())
             .collect::<Vec<&str>>()
