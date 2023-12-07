@@ -1,7 +1,8 @@
 use std::fs;
 use std::cmp::Ordering;
+use std::collections::HashMap;
 
-const CARD_HIERARCHY: &'static [char] = &['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
+const CARD_HIERARCHY: &'static [char] = &['A', 'K', 'Q', 'T', '9', '8', '7', '6', '5', '4', '3', '2', '1', 'J'];
 
 fn main() {
     let file = fs::read_to_string("src/hands.txt").unwrap();
@@ -16,9 +17,19 @@ fn main() {
             .unwrap();
 
         // Determine hand type and add to collection.
+        let most_frequent_character: char;
+
+        {
+            let hand_minus_jokers = hand.chars().filter(|&c| c != 'J').collect::<String>();
+
+            match get_most_frequent_character(&hand_minus_jokers) {
+                Some(character) => most_frequent_character = character,
+                None => most_frequent_character = ' '
+            }
+        }
 
         // Check for 3/4/5 of a kind and full house.
-        match hand.chars().filter(|&c| c == sort_hand(&hand).chars().nth(2).unwrap()).collect::<Vec<char>>().len() {
+        match hand.chars().filter(|&c| c == most_frequent_character || c == 'J').collect::<Vec<char>>().len() {
             5 => {
                 hands.push(Hand { hand, hand_type: HandType::FiveOfAKind, bet } );
                 continue;
@@ -29,7 +40,7 @@ fn main() {
             },
             3 => {
                 let remaining = hand.chars()
-                    .filter(|&c| c != sort_hand(&hand).chars().nth(2).unwrap())
+                    .filter(|&c| c != most_frequent_character && c != 'J')
                     .collect::<Vec<char>>();
                  
                 if remaining[0] == remaining[1] {
@@ -52,6 +63,10 @@ fn main() {
             }
         }
 
+        if pairs.len() < 2 && hand.chars().filter(|&c| c == 'J').collect::<Vec<char>>().len() == 1 {
+            pairs.push('J');
+        }
+
         match pairs.len() {
             2 => hands.push(Hand { hand, hand_type: HandType::TwoPair, bet } ),
             1 => hands.push(Hand { hand, hand_type: HandType::OnePair, bet } ),
@@ -69,18 +84,27 @@ fn main() {
     println!("{}", total_winnings);
 }
 
-fn sort_hand(hand: &String) -> String {
-    let mut to_sort: Vec<char> = hand.chars().collect();
+fn get_most_frequent_character(str: &String) -> Option<char> {
+    if str.len() == 0 {
+        return None;
+    }
 
-    to_sort.sort_by(|a, b| CARD_HIERARCHY.iter()
-        .position(|&c| c == *a)
-        .unwrap()
-        .partial_cmp(&CARD_HIERARCHY.iter()
-            .position(|&c| c == *b)
-            .unwrap())
-        .unwrap());
+    let mut frequencies: HashMap<char, u8> = HashMap::new();
+    let mut most_frequent_character: char = str.chars().next().unwrap();
 
-    to_sort.iter().collect::<String>()
+    for c in str.chars() {
+        if !frequencies.contains_key(&c) {
+            frequencies.insert(c, 1);
+        } else {
+            frequencies.insert(c, frequencies.get(&c).unwrap() + 1);
+        }
+
+        if frequencies.get(&c).unwrap() > frequencies.get(&most_frequent_character).unwrap() {
+            most_frequent_character = c;
+        }
+    }
+
+    Some(most_frequent_character)
 }
 
 #[derive(Debug)]
