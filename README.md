@@ -15,3 +15,5 @@ Day 4 was a lot of fun... part 2 takes my computer a hot second though.
 Day 5 solution for part 1 worked first try :D My first attempt at part 2 used over 70GB of RAM and froze my laptop B) Genuinely quite proud of my solutions for the past two days though.
 
 Day 6. I keep being interrupted by dinner just when the problems are released. Pretty funny tbh.
+
+Day 7 - managed my first implementations of structs, also first time using enums! Today's challenge was fun... after I read the task properly (took me like 5 tries, no wonder my code wasn't working)...
