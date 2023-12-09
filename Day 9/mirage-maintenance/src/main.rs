@@ -39,19 +39,12 @@ fn main() {
         // Part 1.
         for i in (0..(layers.len() - 1)).rev() {
             let mut layer = layers.remove(i);
-            layer.push(layer[layer.len() - 1] + layers[i][layer.len() - 1]);
-            layers.insert(i, layer);
-        }
-
-        part_one_total += layers[0][layers[0].len() - 1] as i64;
-
-        // Part 2.
-        for i in (0..(layers.len() - 1)).rev() {
-            let mut layer = layers.remove(i);
+            layer.push(layer[layer.len() - 1] + layers[i][layer.len()]);
             layer.insert(0, layer[0] - layers[i][0]);
             layers.insert(i, layer);
         }
 
+        part_one_total += layers[0][layers[0].len() - 1] as i64;
         part_two_total += layers[0][0] as i64;
     }
 
