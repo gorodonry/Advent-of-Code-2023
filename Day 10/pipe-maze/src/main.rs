@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs;
 
 const NORTH_APPROACH_PIPES: &'static [char] = &['|', 'L', 'J'];
@@ -64,14 +65,21 @@ fn main() {
         });
     }
 
-    let mut steps: u32 = 0;
     let mut traversed_pipes: Vec<MazeLocation> = Vec::from([start_location]);
+    let mut crawler_history: HashMap<usize, Vec<MazeLocation>> = HashMap::new();
 
-    let mut furthest_point_reached = false;
-    while !furthest_point_reached {
+    for i in 0..current_locations.len() {
+        crawler_history.insert(i, Vec::from([start_location]));
+    }
+
+    // Figure out the coordinates in the loop.
+    let mut loop_traversed = false;
+    while !loop_traversed {
         let mut new_locations: Vec<Crawler> = Vec::new();
 
-        for crawler in current_locations.into_iter() {
+        for i in 0..current_locations.len() {
+            let crawler = &current_locations[i];
+
             let new_location: MazeLocation;
             match crawler.approach_direction {
                 CompassDirection::NORTH => {
@@ -201,19 +209,35 @@ fn main() {
             }
 
             if traversed_pipes.contains(&new_crawler.as_ref().unwrap().current_location) {
-                furthest_point_reached = true;
+                loop_traversed = true;
             } else {
                 traversed_pipes.push(new_crawler.as_ref().unwrap().current_location.clone());
+
+                let mut history = crawler_history.get(&i).unwrap().clone();
+                history.push(new_crawler.as_ref().unwrap().current_location);
+                crawler_history.insert(i, history);
+
                 new_locations.push(new_crawler.unwrap());
             }
         }
 
         current_locations = new_locations;
-
-        steps += 1;
     }
 
-    println!("{}", steps);
+    let maze_loop: Vec<MazeLocation>;
+
+    {
+        let mut maze_loop_parts = Vec::from(crawler_history.get(&0).unwrap().clone());
+        maze_loop_parts.extend(crawler_history.get(&1).unwrap().iter().rev().clone());
+        maze_loop_parts.pop();
+        maze_loop = maze_loop_parts;
+
+        drop(crawler_history);
+        drop(traversed_pipes);
+        drop(current_locations);
+    }
+
+    // Figure out number of open locations enclosed in the maze.
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -235,6 +259,15 @@ struct Crawler {
     current_location: MazeLocation,
     approach_direction: CompassDirection,
 }
+
+impl PartialEq for Crawler {
+    fn eq(&self, other: &Self) -> bool {
+        (&self.current_location, &self.approach_direction)
+            == (&other.current_location, &other.approach_direction)
+    }
+}
+
+impl Eq for Crawler {}
 
 #[derive(PartialEq, Eq, Debug)]
 enum CompassDirection {
