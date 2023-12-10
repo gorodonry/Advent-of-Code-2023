@@ -1,8 +1,10 @@
-use std::fs;
 use std::cmp::Ordering;
 use std::collections::HashMap;
+use std::fs;
 
-const CARD_HIERARCHY: &'static [char] = &['A', 'K', 'Q', 'T', '9', '8', '7', '6', '5', '4', '3', '2', '1', 'J'];
+const CARD_HIERARCHY: &'static [char] = &[
+    'A', 'K', 'Q', 'T', '9', '8', '7', '6', '5', '4', '3', '2', '1', 'J',
+];
 
 fn main() {
     let file = fs::read_to_string("src/hands.txt").unwrap();
@@ -11,8 +13,7 @@ fn main() {
     let mut hands: Vec<Hand> = Vec::new();
     for line in lines.into_iter() {
         let hand: String = String::from(line.split(" ").collect::<Vec<&str>>()[0]);
-        let bet = line.split(" ")
-            .collect::<Vec<&str>>()[1]
+        let bet = line.split(" ").collect::<Vec<&str>>()[1]
             .parse::<u16>()
             .unwrap();
 
@@ -24,53 +25,101 @@ fn main() {
 
             match get_most_frequent_character(&hand_minus_jokers) {
                 Some(character) => most_frequent_character = character,
-                None => most_frequent_character = ' '
+                None => most_frequent_character = ' ',
             }
         }
 
         // Check for 3/4/5 of a kind and full house.
-        match hand.chars().filter(|&c| c == most_frequent_character || c == 'J').collect::<Vec<char>>().len() {
+        match hand
+            .chars()
+            .filter(|&c| c == most_frequent_character || c == 'J')
+            .collect::<Vec<char>>()
+            .len()
+        {
             5 => {
-                hands.push(Hand { hand, hand_type: HandType::FiveOfAKind, bet } );
+                hands.push(Hand {
+                    hand,
+                    hand_type: HandType::FiveOfAKind,
+                    bet,
+                });
                 continue;
-            },
+            }
             4 => {
-                hands.push(Hand { hand, hand_type: HandType::FourOfAKind, bet } );
+                hands.push(Hand {
+                    hand,
+                    hand_type: HandType::FourOfAKind,
+                    bet,
+                });
                 continue;
-            },
+            }
             3 => {
-                let remaining = hand.chars()
+                let remaining = hand
+                    .chars()
                     .filter(|&c| c != most_frequent_character && c != 'J')
                     .collect::<Vec<char>>();
-                 
+
                 if remaining[0] == remaining[1] {
-                    hands.push(Hand { hand, hand_type: HandType::FullHouse, bet } );
+                    hands.push(Hand {
+                        hand,
+                        hand_type: HandType::FullHouse,
+                        bet,
+                    });
                 } else {
-                    hands.push(Hand { hand, hand_type: HandType::ThreeOfAKind, bet } );
+                    hands.push(Hand {
+                        hand,
+                        hand_type: HandType::ThreeOfAKind,
+                        bet,
+                    });
                 }
 
                 continue;
-            },
-            _ => ()
+            }
+            _ => (),
         }
 
         // Check for pairs.
         let mut pairs: Vec<char> = Vec::new();
 
         for c in hand.chars() {
-            if hand.chars().filter(|&e| e == c).collect::<Vec<char>>().len() == 2 && !pairs.contains(&c) {
+            if hand
+                .chars()
+                .filter(|&e| e == c)
+                .collect::<Vec<char>>()
+                .len()
+                == 2
+                && !pairs.contains(&c)
+            {
                 pairs.push(c);
             }
         }
 
-        if pairs.len() < 2 && hand.chars().filter(|&c| c == 'J').collect::<Vec<char>>().len() == 1 {
+        if pairs.len() < 2
+            && hand
+                .chars()
+                .filter(|&c| c == 'J')
+                .collect::<Vec<char>>()
+                .len()
+                == 1
+        {
             pairs.push('J');
         }
 
         match pairs.len() {
-            2 => hands.push(Hand { hand, hand_type: HandType::TwoPair, bet } ),
-            1 => hands.push(Hand { hand, hand_type: HandType::OnePair, bet } ),
-            _ => hands.push(Hand { hand, hand_type: HandType::HighCard, bet } )
+            2 => hands.push(Hand {
+                hand,
+                hand_type: HandType::TwoPair,
+                bet,
+            }),
+            1 => hands.push(Hand {
+                hand,
+                hand_type: HandType::OnePair,
+                bet,
+            }),
+            _ => hands.push(Hand {
+                hand,
+                hand_type: HandType::HighCard,
+                bet,
+            }),
         }
     }
 
@@ -111,7 +160,7 @@ fn get_most_frequent_character(str: &String) -> Option<char> {
 struct Hand {
     hand: String,
     hand_type: HandType,
-    bet: u16
+    bet: u16,
 }
 
 impl PartialEq for Hand {
@@ -133,14 +182,14 @@ impl Ord for Hand {
         if self.hand_type == other.hand_type {
             for c in 0..5 {
                 if self.hand.chars().nth(c).unwrap() != other.hand.chars().nth(c).unwrap() {
-                    return CARD_HIERARCHY.iter()
-                        .position(|&e| e == self.hand.chars()
-                            .nth(c)
-                            .unwrap())
-                        .cmp(&CARD_HIERARCHY.iter()
-                            .position(|&e| e == other.hand.chars()
-                                .nth(c)
-                                .unwrap()));
+                    return CARD_HIERARCHY
+                        .iter()
+                        .position(|&e| e == self.hand.chars().nth(c).unwrap())
+                        .cmp(
+                            &CARD_HIERARCHY
+                                .iter()
+                                .position(|&e| e == other.hand.chars().nth(c).unwrap()),
+                        );
                 }
             }
         }
@@ -157,6 +206,5 @@ enum HandType {
     ThreeOfAKind,
     TwoPair,
     OnePair,
-    HighCard
+    HighCard,
 }
-

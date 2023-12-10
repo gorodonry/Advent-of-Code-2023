@@ -1,5 +1,5 @@
-use std::fs;
 use std::collections::HashMap;
+use std::fs;
 
 fn main() {
     let file = fs::read_to_string("src/seed_map.txt").unwrap();
@@ -14,7 +14,10 @@ fn main() {
 
         // Record initial seeds.
         if line.contains("seeds") {
-            let raw_data: Vec<&str> = line.split(":").collect::<Vec<&str>>()[1].split(" ").filter(|&s| !s.is_empty()).collect();
+            let raw_data: Vec<&str> = line.split(":").collect::<Vec<&str>>()[1]
+                .split(" ")
+                .filter(|&s| !s.is_empty())
+                .collect();
             for i in (0..((raw_data.len() / 2) + 1)).step_by(2) {
                 let start = raw_data.get(i).unwrap().parse::<u64>().unwrap();
                 let range = raw_data.get(i + 1).unwrap().parse::<u64>().unwrap();
@@ -47,11 +50,15 @@ fn main() {
             if *already_processed {
                 continue;
             }
-            
-            if source_range_start + range_length < seed_info.start || source_range_start > seed_info.end {
+
+            if source_range_start + range_length < seed_info.start
+                || source_range_start > seed_info.end
+            {
                 // Source start is greater than seed end or source end is less than seed start.
                 continue;
-            } else if source_range_start < seed_info.start && source_range_start + range_length >= seed_info.end {
+            } else if source_range_start < seed_info.start
+                && source_range_start + range_length >= seed_info.end
+            {
                 // Source start is less than seed start and source end is greater than seed end.
                 let offset = seed_info.start - source_range_start;
 
@@ -138,4 +145,3 @@ struct SeedRange {
     start: u64,
     end: u64,
 }
-
