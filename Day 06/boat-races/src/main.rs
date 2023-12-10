@@ -1,5 +1,5 @@
-use std::fs;
 use std::collections::HashMap;
+use std::fs;
 
 fn main() {
     let part_two_time: u64;
@@ -13,20 +13,31 @@ fn main() {
         let raw_time_data: &str = lines[0].split(":").collect::<Vec<&str>>()[1];
         let raw_record_data: &str = lines[1].split(":").collect::<Vec<&str>>()[1];
 
-        let times: Vec<&str> = raw_time_data.split(" ").filter(|&t| !t.is_empty()).collect();
-        let distances: Vec<&str> = raw_record_data.split(" ").filter(|&d| !d.is_empty()).collect();
-        
+        let times: Vec<&str> = raw_time_data
+            .split(" ")
+            .filter(|&t| !t.is_empty())
+            .collect();
+        let distances: Vec<&str> = raw_record_data
+            .split(" ")
+            .filter(|&d| !d.is_empty())
+            .collect();
+
         for i in 0..times.len() {
-            times_and_records.insert(times[i].parse::<u16>().unwrap(), distances[i].parse::<u16>().unwrap());
+            times_and_records.insert(
+                times[i].parse::<u16>().unwrap(),
+                distances[i].parse::<u16>().unwrap(),
+            );
         }
 
-        part_two_time = raw_time_data.split(" ")
+        part_two_time = raw_time_data
+            .split(" ")
             .filter(|&ts| !ts.is_empty())
             .collect::<Vec<&str>>()
             .join("")
             .parse::<u64>()
             .unwrap();
-        part_two_record = raw_record_data.split(" ")
+        part_two_record = raw_record_data
+            .split(" ")
             .filter(|&rs| !rs.is_empty())
             .collect::<Vec<&str>>()
             .join("")
@@ -62,4 +73,3 @@ fn main() {
     println!("Part 1: {}", margin_of_error);
     println!("Part 2: {}", ways_of_winning);
 }
-

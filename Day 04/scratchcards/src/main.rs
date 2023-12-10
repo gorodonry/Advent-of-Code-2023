@@ -1,5 +1,5 @@
-use std::fs;
 use std::collections::HashMap;
+use std::fs;
 
 fn main() {
     let file = fs::read_to_string("src/scratchcards.txt").unwrap();
@@ -18,8 +18,7 @@ fn main() {
         let mut elf_numbers: Vec<u8> = Vec::new();
 
         {
-            let raw_winning_data: Vec<&str> = card.split("|")
-                .collect::<Vec<&str>>()[0]
+            let raw_winning_data: Vec<&str> = card.split("|").collect::<Vec<&str>>()[0]
                 .split(":")
                 .collect::<Vec<&str>>()[1]
                 .split(" ")
@@ -29,8 +28,7 @@ fn main() {
                 winning_numbers.push(number.parse::<u8>().unwrap());
             }
 
-            let raw_elf_data: Vec<&str> = card.split("|")
-                .collect::<Vec<&str>>()[1]
+            let raw_elf_data: Vec<&str> = card.split("|").collect::<Vec<&str>>()[1]
                 .split(" ")
                 .filter(|&n| !n.is_empty())
                 .collect();
@@ -57,7 +55,10 @@ fn main() {
 
         for _ in 0..(*copies.get(&(card_index as u32)).unwrap() as usize) {
             for m in 0..matches {
-                copies.insert((card_index + m as usize + 1) as u32, (copies.get(&((card_index + m as usize + 1) as u32)).unwrap() + 1) as u32);
+                copies.insert(
+                    (card_index + m as usize + 1) as u32,
+                    (copies.get(&((card_index + m as usize + 1) as u32)).unwrap() + 1) as u32,
+                );
             }
         }
 
@@ -67,4 +68,3 @@ fn main() {
     println!("Part 1: {}", total_score);
     println!("Part 2: {}", total_cards);
 }
-

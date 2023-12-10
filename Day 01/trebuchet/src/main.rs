@@ -1,6 +1,6 @@
-use std::fs;
 use lazy_static::lazy_static;
 use std::collections::HashMap;
+use std::fs;
 
 lazy_static! {
     static ref NUMBERS: HashMap<&'static str, u32> = {
@@ -27,18 +27,30 @@ fn main() {
         let mut code: String = String::new();
 
         let mut word_form_present: bool;
-        let non_numeric_segments: Vec<&str> = string.split(char::is_numeric).filter(|&s| !s.is_empty()).collect();
+        let non_numeric_segments: Vec<&str> = string
+            .split(char::is_numeric)
+            .filter(|&s| !s.is_empty())
+            .collect();
 
         word_form_present = false;
 
         if non_numeric_segments.len() != 0 && !string.chars().nth(0).unwrap().is_numeric() {
             'outer: for c in 0..non_numeric_segments[0].len() {
-                let mut potential_number = String::from(non_numeric_segments[0].chars().nth(c).unwrap());
-                
+                let mut potential_number =
+                    String::from(non_numeric_segments[0].chars().nth(c).unwrap());
+
                 for remaining in (c + 1)..non_numeric_segments[0].len() {
                     potential_number.push(non_numeric_segments[0].chars().nth(remaining).unwrap());
                     if NUMBERS.contains_key(&potential_number as &str) {
-                        code.push(NUMBERS.get(&potential_number as &str).unwrap().to_string().chars().nth(0).unwrap());
+                        code.push(
+                            NUMBERS
+                                .get(&potential_number as &str)
+                                .unwrap()
+                                .to_string()
+                                .chars()
+                                .nth(0)
+                                .unwrap(),
+                        );
                         word_form_present = true;
                         break 'outer;
                     }
@@ -57,14 +69,35 @@ fn main() {
 
         word_form_present = false;
 
-        if non_numeric_segments.len() != 0 && !string.chars().nth(string.len() - 1).unwrap().is_numeric() {
+        if non_numeric_segments.len() != 0
+            && !string.chars().nth(string.len() - 1).unwrap().is_numeric()
+        {
             'outer: for c in (0..non_numeric_segments[non_numeric_segments.len() - 1].len()).rev() {
-                let mut potential_number = String::from(non_numeric_segments[non_numeric_segments.len() - 1].chars().nth(c).unwrap());
+                let mut potential_number = String::from(
+                    non_numeric_segments[non_numeric_segments.len() - 1]
+                        .chars()
+                        .nth(c)
+                        .unwrap(),
+                );
 
-                for remaining in (c + 1)..non_numeric_segments[non_numeric_segments.len() - 1].len() {
-                    potential_number.push(non_numeric_segments[non_numeric_segments.len() - 1].chars().nth(remaining).unwrap());
+                for remaining in (c + 1)..non_numeric_segments[non_numeric_segments.len() - 1].len()
+                {
+                    potential_number.push(
+                        non_numeric_segments[non_numeric_segments.len() - 1]
+                            .chars()
+                            .nth(remaining)
+                            .unwrap(),
+                    );
                     if NUMBERS.contains_key(&potential_number as &str) {
-                        code.push(NUMBERS.get(&potential_number as &str).unwrap().to_string().chars().nth(0).unwrap());
+                        code.push(
+                            NUMBERS
+                                .get(&potential_number as &str)
+                                .unwrap()
+                                .to_string()
+                                .chars()
+                                .nth(0)
+                                .unwrap(),
+                        );
                         word_form_present = true;
                         break 'outer;
                     }
@@ -80,8 +113,8 @@ fn main() {
                 }
             }
         }
-        
-        codes.push(code.parse::<u32>().unwrap()); 
+
+        codes.push(code.parse::<u32>().unwrap());
     }
 
     let sum: u32 = codes.iter().sum();
