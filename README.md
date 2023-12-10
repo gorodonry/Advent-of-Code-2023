@@ -21,3 +21,5 @@ Day 7 - managed my first implementations of structs, also first time using enums
 Took me waaaaayy too long to figure out that lcm(a, b, c) = lcm(a, lcm(b, c)) for day 8. Pretty chill once I figured that out - before that my solution worked, I just lost patience waiting for it to calculate the answer after 15 minutes went by.
 
 Starting to get the hang of rust by day 9 :)
+
+Day 10 part 1 was fun. Part 2 mssoojfd;g; ,;lgo[r;gmoiubr  sedfoij  y v   b bb
