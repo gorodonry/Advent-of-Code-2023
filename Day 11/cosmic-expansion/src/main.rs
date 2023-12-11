@@ -22,18 +22,23 @@ fn main() {
         }
     }
 
-    let mut total: u32 = 0;
+    let mut part_one_total: u32 = 0;
+    let mut part_two_total: u64 = 0;
     for g in 0..galaxy_locations.len() {
         for og in (g + 1)..galaxy_locations.len() {
-            let mut steps: u16 = ((galaxy_locations[g].row - galaxy_locations[og].row).abs()
+            let steps: u16 = ((galaxy_locations[g].row - galaxy_locations[og].row).abs()
                 + (galaxy_locations[g].col - galaxy_locations[og].col).abs())
                 as u16;
+
+            part_one_total += steps as u32;
+            part_two_total += steps as u64;
 
             for row in std::cmp::min(galaxy_locations[g].row + 1, galaxy_locations[og].row + 1)
                 ..std::cmp::max(galaxy_locations[g].row, galaxy_locations[og].row)
             {
                 if empty_space(&map[row as usize]) {
-                    steps += 1;
+                    part_one_total += 1;
+                    part_two_total += 999999;
                 }
             }
 
@@ -42,15 +47,15 @@ fn main() {
             {
                 let column: Vec<char> = map.iter().map(|r| r[col as usize]).collect();
                 if empty_space(&column) {
-                    steps += 1;
+                    part_one_total += 1;
+                    part_two_total += 999999;
                 }
             }
-
-            total += steps as u32;
         }
     }
 
-    println!("{}", total);
+    println!("Part 1: {}", part_one_total);
+    println!("Part 2: {}", part_two_total);
 }
 
 fn empty_space(vector: &Vec<char>) -> bool {
