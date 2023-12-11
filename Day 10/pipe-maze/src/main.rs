@@ -238,6 +238,26 @@ fn main() {
     }
 
     // Figure out number of open locations enclosed in the maze.
+    let mut number_of_potential_nests: u32 = 0;
+    for i in 0..maze.len() {
+        for j in 0..maze[0].len() {
+            if maze_loop.contains(&MazeLocation { row: i, col: j }) {
+                continue;
+            }
+
+            let mut number_of_loop_components_passed: u16 = 0;
+            for k in 0..j {
+                if maze_loop.contains(&MazeLocation { row: i, col: k }) {
+                    number_of_loop_components_passed += 1;
+                }
+            }
+
+            // If an odd number of loop components are passed on the way to the edge, then the location is enclosed by the loop.
+            number_of_potential_nests += (number_of_loop_components_passed % 2) as u32;
+        }
+    }
+
+    println!("{}", number_of_potential_nests);
 }
 
 #[derive(Copy, Clone, Debug)]
