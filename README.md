@@ -22,6 +22,6 @@ Took me waaaaayy too long to figure out that lcm(a, b, c) = lcm(a, lcm(b, c)) fo
 
 Starting to get the hang of rust by day 9 :)
 
-Day 10 part 1 was fun, by a definition of the word. Part 2 mssoojfd;g; ,;lgo[r;gmoiubr  sedfoij  y v   b bb  **I will not be taking any questions about part 2.**....hnnngg maybe one or two...
+Day 10 part 1 was fun, by a definition of the word. Part 2 mssoojfd;g; ,;lgo[r;gmoiubr  sedfoij  y v   b bb  **I will not be taking any questions about part 2..**....hnnngg maybe one or two...
 
 Day 11 real chill. Makes up for yesterday :)
