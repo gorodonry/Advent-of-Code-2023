@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fs;
-use std::iter::FromIterator;
 
 const NORTH_APPROACH_PIPES: &'static [char] = &['|', 'L', 'J'];
 const EAST_APPROACH_PIPES: &'static [char] = &['-', 'L', 'F'];
@@ -9,7 +8,7 @@ const SOUTH_APPROACH_PIPES: &'static [char] = &['|', 'F', '7'];
 const WEST_APPROACH_PIPES: &'static [char] = &['-', 'J', '7'];
 
 fn main() {
-    let file = fs::read_to_string("src/test1.txt").unwrap();
+    let file = fs::read_to_string("src/maze.txt").unwrap();
     let maze: Vec<Vec<char>> = file
         .split_terminator("\n")
         .collect::<Vec<&str>>()
@@ -239,115 +238,97 @@ fn main() {
         drop(current_locations);
     }
 
-    // Figure out number of open locations enclosed in the maze.
-    let mut number_of_potential_nests: u32 = 0;
-    let mut visited_locations: HashSet<MazeLocation> = HashSet::from_iter(maze_loop.clone());
+    // Figure out number of open locations enclosed in the loop.
+    let mut outside_locations: HashSet<MazeLocation> = HashSet::new();
 
-    for i in 0..maze.len() {
-        for j in 0..maze[0].len() {
-            let one_hugo_to_rule_them_all = MazeLocation { row: i as isize, col: j as isize };
+    // Note 0, 0 is outside the loop.
+    let one_hugo_to_rule_them_all = Hugo { maze_location: MazeLocation { row: 3, col: 3 }, node_location: MazeLocation { row: 0, col: 0 } };
+    let mut crusading_hugos = Vec::from([one_hugo_to_rule_them_all.clone()]);
+    let mut retired_hugos: HashSet<Hugo> = HashSet::new();
 
-            if visited_locations.contains(&one_hugo_to_rule_them_all) {
+    while !crusading_hugos.is_empty() {
+        let mut incoming_hugos: Vec<Hugo> = Vec::new();
+        for hugo in crusading_hugos.into_iter() {
+            // Magical statement that fixes everything and I have no idea why (literally, I'm not kidding).
+            if retired_hugos.contains(&hugo) {
                 continue;
             }
 
-            // Try and find a valid way to the edge.
-            let mut crusading_hugos = Vec::from([one_hugo_to_rule_them_all.clone()]);
-            let mut retired_hugos = Vec::new();
+            let mut new_hugos: Vec<Hugo> = Vec::new();
 
-            let mut edge_reached = false;
-            while !crusading_hugos.is_empty() && !edge_reached {
-                for hugo in crusading_hugos.clone().iter() {
-                    // Try exploring in each of the four directions and just see what happens.
-                    let mut new_hugos: Vec<MazeLocation> = Vec::new();
+            // Try move up.
+            if hugo.node_location.row == -1 {
+                new_hugos.push(Hugo { maze_location: MazeLocation { row: hugo.maze_location.row - 1, col: hugo.maze_location.col }, node_location: MazeLocation { row: 1, col: hugo.node_location.col } });
+            } else {
+                new_hugos.push(Hugo { maze_location: hugo.maze_location.clone(), node_location: MazeLocation { row: hugo.node_location.row - 1, col: hugo.node_location.col } });
+            }
 
-                    if hugo.row != 0 {
-                        new_hugos.push(MazeLocation { row: hugo.row - 1, col: hugo.col });
-                    } else {
-                        new_hugos.push( MazeLocation { row: -1, col: -1 });
+            // Try move right.
+            if hugo.node_location.col == 1 {
+                new_hugos.push(Hugo { maze_location: MazeLocation { row: hugo.maze_location.row, col: hugo.maze_location.col + 1 }, node_location: MazeLocation { row: hugo.node_location.row, col: -1 } });
+            } else {
+                new_hugos.push(Hugo { maze_location: hugo.maze_location.clone(), node_location: MazeLocation { row: hugo.node_location.row, col: hugo.node_location.col + 1 } });
+            }
+            
+            // Try move down.
+            if hugo.node_location.row == 1 {
+                new_hugos.push(Hugo { maze_location: MazeLocation { row: hugo.maze_location.row + 1, col: hugo.maze_location.col }, node_location: MazeLocation { row: -1, col: hugo.node_location.col } });
+            } else {
+                new_hugos.push(Hugo { maze_location: hugo.maze_location.clone(), node_location: MazeLocation { row: hugo.node_location.row + 1, col: hugo.node_location.col } });
+            }
+
+            // Try move left.
+            if hugo.node_location.col == -1 {
+                new_hugos.push(Hugo { maze_location: MazeLocation { row: hugo.maze_location.row, col: hugo.maze_location.col - 1 }, node_location: MazeLocation { row: hugo.node_location.row, col: 1 } });
+            } else {
+                new_hugos.push(Hugo { maze_location: hugo.maze_location.clone(), node_location: MazeLocation { row: hugo.node_location.row, col: hugo.node_location.col - 1 } });
+            }
+
+            for voluntold in new_hugos.into_iter() {
+                if voluntold.maze_location.row < 0 || voluntold.maze_location.row >= maze.len() as isize || voluntold.maze_location.col < 0 || voluntold.maze_location.col >= maze[0].len() as isize {
+                    continue;
+                }
+
+                if retired_hugos.contains(&voluntold) {
+                    continue;
+                }
+
+                if maze_loop.contains(&voluntold.maze_location) {
+                    // Things get spicy.
+                    let node = maze[voluntold.maze_location.row as usize][voluntold.maze_location.col as usize];
+
+                    if convert_to_three_by_three(node)[(voluntold.node_location.row + 1) as usize][(voluntold.node_location.col + 1) as usize] != '#' {
+                        incoming_hugos.push(voluntold);
                     }
+                } else {
+                    incoming_hugos.push(voluntold);
 
-                    if hugo.col != 0 {
-                        new_hugos.push(MazeLocation { row: hugo.row, col: hugo.col - 1 });
-                    } else {
-                        new_hugos.push( MazeLocation { row: -1, col: -1 });
+                    if !outside_locations.contains(&voluntold.maze_location) {
+                        outside_locations.insert(voluntold.maze_location);
                     }
-
-                    if hugo.row != maze.len() as isize - 1 {
-                        new_hugos.push(MazeLocation { row: hugo.row + 1, col: hugo.col });
-                    } else {
-                        new_hugos.push( MazeLocation { row: -1, col: -1 });
-                    }
-
-                    if hugo.col != maze[0].len() as isize - 1 {
-                        new_hugos.push(MazeLocation { row: hugo.row, col: hugo.col + 1 });
-                    } else {
-                        new_hugos.push( MazeLocation { row: -1, col: -1 });
-                    }
-
-                    for voluntold in new_hugos.clone().iter() {
-                        if (*voluntold == MazeLocation { row: -1, col: -1 }) {
-                            new_hugos.remove(new_hugos.iter().position(|&h| h == *voluntold).unwrap());
-                            continue;
-                        }
-
-                        if maze_loop.contains(voluntold) {
-                            // Check surroundings for sneaky.
-                            match new_hugos.iter().position(|&h| h == *voluntold).unwrap() + (4 - new_hugos.len()) {
-                                0 => {
-                                    let left = MazeLocation { row: voluntold.row, col: voluntold.col - 1 };
-                                    let right = MazeLocation { row: voluntold.row, col: voluntold.col + 1 };
-
-                                    if maze_loop.contains(&left) && maze_loop.contains(&right) {
-                                        if !((maze_loop.iter().position(|&phugo| phugo == left).unwrap() as isize - maze_loop.iter().position(|&phugo| phugo == *voluntold).unwrap() as isize).abs() == 1) {
-                                            // Sneaky has occurred.
-                                        } else if!((maze_loop.iter().position(|&phugo| phugo == *voluntold).unwrap() as isize - maze_loop.iter().position(|&phugo| phugo == right).unwrap() as isize).abs() == 1) {
-                                            // Sneaky has occurred.
-                                        }
-                                    }
-                                },
-                                1 => {
-                                    // Implement for these as well.
-                                },
-                                2 => {
-
-                                },
-                                3 => {
-
-                                },
-                                _ => {
-                                    panic!("Too many hugos AHHHHH");
-                                }
-                            }
-
-                            new_hugos.remove(new_hugos.iter().position(|&h| h == *voluntold).unwrap());
-                        } else if visited_locations.contains(voluntold) {
-                            new_hugos.remove(new_hugos.iter().position(|&h| h == *voluntold).unwrap());
-                        } else {
-                            if voluntold.row == 0 || voluntold.row == maze.len() as isize || voluntold.col == 0 || voluntold.col == maze[0].len() as isize {
-                                edge_reached = true;
-                            }
-                        }
-                    }
-
-                    crusading_hugos.remove(crusading_hugos.iter().position(|&h| h == *hugo).unwrap());
-                    crusading_hugos.extend(new_hugos.clone());
-                    retired_hugos.push(hugo.clone());
-                    visited_locations.extend(new_hugos);
                 }
             }
 
-            println!("{:?}", retired_hugos);
-            println!("Current hugos: {:?}", crusading_hugos);
-            println!("All visited: {:?}", visited_locations);
-
-            if !edge_reached {
-                number_of_potential_nests += retired_hugos.len() as u32;
-            }
+            retired_hugos.insert(hugo);
         }
+
+        crusading_hugos = incoming_hugos;
     }
 
-    println!("{}", number_of_potential_nests);
+    println!("{}", maze.len() * maze[0].len() - maze_loop.len() - outside_locations.len());
+}
+
+fn convert_to_three_by_three(node: char) -> Vec<Vec<char>> {
+    match node {
+        '|' => return vec![vec!['.', '#', '.']; 3],
+        '-' => return vec![vec!['.'; 3], vec!['#'; 3], vec!['.'; 3]],
+        'L' => return vec![vec!['.', '#', '.'], vec!['.', '#', '#'], vec!['.'; 3]],
+        'J' => return vec![vec!['.', '#', '.'], vec!['#', '#', '.'], vec!['.'; 3]],
+        '7' => return vec![vec!['.'; 3], vec!['#', '#', '.'], vec!['.', '#', '.']],
+        'F' => return vec![vec!['.'; 3], vec!['.', '#', '#'], vec!['.', '#', '.']],
+        'S' => return convert_to_three_by_three('J'),  // Yes I know hardcoding is bad, but at this point just deal with it. Too bad if you don't like it. J FOR THE ACTUAL THING.
+        _ => return vec![vec!['.'; 3]; 3]
+    }
 }
 
 #[derive(Copy, Clone, Debug, Hash)]
@@ -378,6 +359,20 @@ impl PartialEq for Crawler {
 }
 
 impl Eq for Crawler {}
+
+#[derive(Copy, Clone, Debug, Hash)]
+struct Hugo {
+    maze_location: MazeLocation,
+    node_location: MazeLocation
+}
+
+impl PartialEq for Hugo {
+    fn eq(&self, other: &Self) -> bool {
+        (&self.maze_location, &self.node_location) == (&other.maze_location, &other.node_location)
+    }
+}
+
+impl Eq for Hugo {}
 
 #[derive(PartialEq, Eq, Debug)]
 enum CompassDirection {
