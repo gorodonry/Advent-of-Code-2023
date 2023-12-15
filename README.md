@@ -31,3 +31,5 @@ Day 12 part 1 was nice, once I got brave enough to use recursion (and I forgot a
 By day 13 I have well and truly realised I do not have time to do this... that doesn't appear to have stopped me though. Today took me far longer than it should've because I kept misinterpreting the task.
 
 I really should've learnt not to use brute force by now (day 14)...
+
+Day 15 really cool.
