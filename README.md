@@ -33,3 +33,5 @@ By day 13 I have well and truly realised I do not have time to do this... that d
 I really should've learnt not to use brute force by now (day 14)...
 
 Day 15 really cool.
+
+Day 16 even coolerer.
