@@ -9,11 +9,75 @@ fn main() {
         .map(|&row| row.chars().collect::<Vec<char>>())
         .collect::<Vec<Vec<char>>>();
 
+    // Part 1.
+    println!(
+        "Part 1: {}",
+        determine_number_of_energised_tiles(
+            &floor,
+            Beam {
+                location: Location { row: 0, col: -1 },
+                direction: Direction::RIGHT
+            }
+        )
+    );
+
+    // Part 2.
+    let mut energised_tiles: Vec<usize> = Vec::new();
+
+    // Left and right sides.
+    for i in 0..floor.len() {
+        energised_tiles.push(determine_number_of_energised_tiles(
+            &floor,
+            Beam {
+                location: Location {
+                    row: i as isize,
+                    col: -1,
+                },
+                direction: Direction::RIGHT,
+            },
+        ));
+        energised_tiles.push(determine_number_of_energised_tiles(
+            &floor,
+            Beam {
+                location: Location {
+                    row: i as isize,
+                    col: floor[0].len() as isize,
+                },
+                direction: Direction::LEFT,
+            },
+        ));
+    }
+
+    // Top and bottom.
+    for i in 0..floor[0].len() {
+        energised_tiles.push(determine_number_of_energised_tiles(
+            &floor,
+            Beam {
+                location: Location {
+                    row: -1,
+                    col: i as isize,
+                },
+                direction: Direction::DOWN,
+            },
+        ));
+        energised_tiles.push(determine_number_of_energised_tiles(
+            &floor,
+            Beam {
+                location: Location {
+                    row: floor.len() as isize,
+                    col: i as isize,
+                },
+                direction: Direction::UP,
+            },
+        ));
+    }
+
+    println!("Part 2: {}", energised_tiles.iter().max().unwrap());
+}
+
+fn determine_number_of_energised_tiles(floor: &Vec<Vec<char>>, start_tile: Beam) -> usize {
     let mut energised_tiles: Vec<Location> = Vec::new();
-    let mut beams: Vec<Beam> = vec![Beam {
-        location: Location { row: 0, col: -1 },
-        direction: Direction::RIGHT,
-    }];
+    let mut beams: Vec<Beam> = Vec::from([start_tile]);
     let mut past_beams: Vec<Beam> = Vec::new();
 
     while !beams.is_empty() {
@@ -126,7 +190,7 @@ fn main() {
         }
     }
 
-    println!("{}", energised_tiles.len() - 1);
+    energised_tiles.len() - 1
 }
 
 fn get_next_location(location: &Location, direction: &Direction) -> Location {
