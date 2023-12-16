@@ -1,5 +1,5 @@
-use std::fs;
 use std::collections::HashMap;
+use std::fs;
 
 fn main() {
     let file = fs::read_to_string("src/sequence.txt").unwrap();
@@ -11,12 +11,25 @@ fn main() {
     for part in sequence.into_iter() {
         part_one_total += hash(&part) as u32;
 
-        let action = part.chars().filter(|&c| vec!['-', '='].contains(&c)).collect::<Vec<char>>()[0];
-        let label: String = part.chars().collect::<Vec<char>>()[..part.chars().position(|c| c == action).unwrap()].iter().collect::<String>();
+        let action = part
+            .chars()
+            .filter(|&c| vec!['-', '='].contains(&c))
+            .collect::<Vec<char>>()[0];
+        let label: String = part.chars().collect::<Vec<char>>()
+            [..part.chars().position(|c| c == action).unwrap()]
+            .iter()
+            .collect::<String>();
         let focal_length: Option<u8>;
 
         if action == '=' {
-            focal_length = Some(String::from(part.chars().collect::<Vec<char>>()[part.chars().position(|c| c == action).unwrap() + 1]).parse::<u8>().unwrap());
+            focal_length = Some(
+                String::from(
+                    part.chars().collect::<Vec<char>>()
+                        [part.chars().position(|c| c == action).unwrap() + 1],
+                )
+                .parse::<u8>()
+                .unwrap(),
+            );
         } else {
             focal_length = None;
         }
@@ -35,19 +48,22 @@ fn main() {
 
         match action {
             '=' => {
-                let new_lens = Lens { label, focal_length: focal_length.unwrap() };
+                let new_lens = Lens {
+                    label,
+                    focal_length: focal_length.unwrap(),
+                };
                 if index.is_some() {
                     boxes.get_mut(&hash).unwrap()[index.unwrap()] = new_lens;
                 } else {
                     boxes.get_mut(&hash).unwrap().push(new_lens);
                 }
-            },
+            }
             '-' => {
                 if index.is_some() {
                     boxes.get_mut(&hash).unwrap().remove(index.unwrap());
                 }
-            },
-            _ => panic!("Shit is so broken")
+            }
+            _ => panic!("Shit is so broken"),
         }
     }
 
@@ -55,7 +71,11 @@ fn main() {
 
     for box_number in boxes.keys() {
         for slot in 0..boxes[box_number].len() {
-            part_two_total += u32::from((box_number + 1) * (slot as u16 + 1) * (boxes[box_number][slot].focal_length as u16));
+            part_two_total += u32::from(
+                (box_number + 1)
+                    * (slot as u16 + 1)
+                    * (boxes[box_number][slot].focal_length as u16),
+            );
         }
     }
 
@@ -79,5 +99,5 @@ fn hash(string: &str) -> u16 {
 #[derive(Debug)]
 struct Lens {
     label: String,
-    focal_length: u8
+    focal_length: u8,
 }
