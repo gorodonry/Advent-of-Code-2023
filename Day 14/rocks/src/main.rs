@@ -2,12 +2,22 @@ use std::fs;
 
 fn main() {
     let file = fs::read_to_string("src/platform.txt").unwrap();
-    let mut platform: Vec<Vec<char>> = file.split_terminator("\n").collect::<Vec<&str>>().iter().map(|&row| row.chars().collect::<Vec<char>>()).collect();
+    let mut platform: Vec<Vec<char>> = file
+        .split_terminator("\n")
+        .collect::<Vec<&str>>()
+        .iter()
+        .map(|&row| row.chars().collect::<Vec<char>>())
+        .collect();
 
     let mut part_one_platform: Vec<Vec<char>> = Vec::new();
 
     for i in 0..platform[0].len() {
-        part_one_platform.push(platform.iter().map(|row| row[i].clone()).collect::<Vec<char>>());
+        part_one_platform.push(
+            platform
+                .iter()
+                .map(|row| row[i].clone())
+                .collect::<Vec<char>>(),
+        );
     }
 
     let mut part_one_load: u32 = 0;
@@ -25,14 +35,21 @@ fn main() {
     }
 
     let report = spin_cycle(&mut platform, 1000000000, true);
-    spin_cycle(&mut platform, (1000000000 - report.cycles_processed) % report.repetition_cycle, false);
+    spin_cycle(
+        &mut platform,
+        (1000000000 - report.cycles_processed) % report.repetition_cycle,
+        false,
+    );
 
     print_platform(&platform);
 
     let mut part_two_load: u32 = 0;
-    
+
     for col in 0..platform[0].len() {
-        let column = platform.iter().map(|row| row[col].clone()).collect::<Vec<char>>();
+        let column = platform
+            .iter()
+            .map(|row| row[col].clone())
+            .collect::<Vec<char>>();
 
         for i in 0..column.len() {
             if column[i] == 'O' {
@@ -45,7 +62,11 @@ fn main() {
     println!("Part 2: {}", part_two_load);
 }
 
-fn spin_cycle(platform: &mut Vec<Vec<char>>, cycles: usize, break_after_repitition: bool) -> SpinCycleReport {
+fn spin_cycle(
+    platform: &mut Vec<Vec<char>>,
+    cycles: usize,
+    break_after_repitition: bool,
+) -> SpinCycleReport {
     let mut cache: Vec<Vec<Vec<char>>> = Vec::new();
     let mut repetition_begins: usize = 0;
     let mut repetition_cycle: usize = 0;
@@ -78,7 +99,14 @@ fn spin_cycle(platform: &mut Vec<Vec<char>>, cycles: usize, break_after_repititi
 
         // Roll south.
         for i in 0..platform[0].len() {
-            let mut column: Vec<char> = platform.iter().map(|row| row[i].clone()).collect::<Vec<char>>().iter().rev().map(|c| *c).collect();
+            let mut column: Vec<char> = platform
+                .iter()
+                .map(|row| row[i].clone())
+                .collect::<Vec<char>>()
+                .iter()
+                .rev()
+                .map(|c| *c)
+                .collect();
 
             while !all_round_rocks_north(&column) {
                 roll_rocks(&mut column);
@@ -116,7 +144,10 @@ fn spin_cycle(platform: &mut Vec<Vec<char>>, cycles: usize, break_after_repititi
         cache.push(platform.clone());
     }
 
-    SpinCycleReport { cycles_processed, repetition_cycle }
+    SpinCycleReport {
+        cycles_processed,
+        repetition_cycle,
+    }
 }
 
 fn roll_rocks(vector: &mut Vec<char>) {
@@ -149,5 +180,5 @@ fn print_platform(platform: &Vec<Vec<char>>) {
 #[derive(Debug)]
 struct SpinCycleReport {
     cycles_processed: usize,
-    repetition_cycle: usize
+    repetition_cycle: usize,
 }
