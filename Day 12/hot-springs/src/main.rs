@@ -2,14 +2,14 @@ use std::collections::HashMap;
 use std::fs;
 
 fn main() {
-    let file = fs::read_to_string("src/test.txt").unwrap();
+    let file = fs::read_to_string("src/data.txt").unwrap();
     let rows: Vec<&str> = file.split_terminator("\n").collect();
 
     let mut part_one_total: u32 = 0;
-    let mut part_two_total: u32 = 0;
+    let mut part_two_total: u64 = 0;
 
     for row in rows.into_iter() {
-        let mut cache: HashMap<String, u32>;
+        let mut cache: HashMap<String, u64>;
 
         let part_one_springs: Vec<char> = row.split(" ").collect::<Vec<&str>>()[0]
             .chars()
@@ -21,10 +21,8 @@ fn main() {
             .map(|&e| e.parse::<u8>().unwrap())
             .collect();
 
-        println!("{}", row);
-
         cache = HashMap::new();
-        part_one_total += count_arrangements(&part_one_springs, &part_one_broken_amounts, true, &mut cache);
+        part_one_total += count_arrangements(&part_one_springs, &part_one_broken_amounts, true, &mut cache) as u32;
 
         let part_two_springs = multiply_vector_with_separator(&part_one_springs, '?', 5);
         let part_two_broken_amounts = multiply_vector(&part_one_broken_amounts, 5);
@@ -41,9 +39,9 @@ fn count_arrangements(
     springs: &Vec<char>,
     broken_sections: &Vec<u8>,
     next_spring_can_be_broken: bool,
-    cache: &mut HashMap<String, u32>
-) -> u32 {
-    let mut result: u32 = 0;
+    cache: &mut HashMap<String, u64>
+) -> u64 {
+    let mut result: u64 = 0;
 
     let cache_representation = get_cache_representation(springs, broken_sections, next_spring_can_be_broken);
 
