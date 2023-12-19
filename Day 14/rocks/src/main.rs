@@ -72,7 +72,7 @@ fn spin_cycle(
     let mut repetition_cycle: usize = 0;
     let mut cycles_processed: usize = 0;
 
-    for i in 0..cycles {
+    for cycle_no in 0..cycles {
         // Roll north.
         for i in 0..platform[0].len() {
             let mut column: Vec<char> = platform.iter().map(|row| row[i].clone()).collect();
@@ -132,9 +132,9 @@ fn spin_cycle(
 
         if repetition_begins == 0 && cache.contains(&platform) {
             cache.clear();
-            repetition_begins = i;
+            repetition_begins = cycle_no;
         } else if repetition_cycle == 0 && cache.contains(&platform) {
-            repetition_cycle = i - repetition_begins;
+            repetition_cycle = cycle_no - repetition_begins;
 
             if break_after_repitition {
                 break;
