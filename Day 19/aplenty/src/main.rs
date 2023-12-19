@@ -8,10 +8,11 @@ fn main() {
     let lines: Vec<&str> = file.split_terminator("\n").collect();
 
     let mut mode = Mode::InitialisingWorkflows;
-    let mut total: u32 = 0;
+    let mut part_one_total: u32 = 0;
 
     let mut workflows: HashMap<String, Workflow> = HashMap::new();
 
+    // Set up workflows and part 1.
     for line in lines.into_iter() {
         if line.is_empty() {
             mode = Mode::ProcessingParts;
@@ -88,7 +89,7 @@ fn main() {
                             match condition.failure_workflow.as_str() {
                                 "A" => {
                                     for category in CATEGORIES.iter() {
-                                        total +=
+                                        part_one_total +=
                                             part.get_associated_rating(*category).unwrap() as u32;
                                     }
 
@@ -108,7 +109,8 @@ fn main() {
                     match current_workflow.end_behaviour.as_str() {
                         "A" => {
                             for category in CATEGORIES.iter() {
-                                total += part.get_associated_rating(*category).unwrap() as u32;
+                                part_one_total +=
+                                    part.get_associated_rating(*category).unwrap() as u32;
                             }
 
                             end_destination_determined = true;
@@ -124,7 +126,9 @@ fn main() {
         }
     }
 
-    println!("{}", total);
+    // Part 2.
+
+    println!("{}", part_one_total);
 }
 
 #[derive(Debug)]
