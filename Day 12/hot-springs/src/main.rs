@@ -22,7 +22,6 @@ fn main() {
             .collect();
 
         println!("{}", row);
-        println!("{}", part_one_springs.iter().collect::<String>());
 
         cache = HashMap::new();
         part_one_total += count_arrangements(&part_one_springs, &part_one_broken_amounts, true, &mut cache);
@@ -46,10 +45,10 @@ fn count_arrangements(
 ) -> u32 {
     let mut result: u32 = 0;
 
-    let cache_representation = get_cache_representation(springs, broken_sections);
+    let cache_representation = get_cache_representation(springs, broken_sections, next_spring_can_be_broken);
 
     if cache.contains_key(&cache_representation) {
-        //return *cache.get(&cache_representation).unwrap();
+        return *cache.get(&cache_representation).unwrap();
     }
 
     if springs.len() == 0 {
@@ -102,8 +101,8 @@ fn count_arrangements(
     result
 }
 
-fn get_cache_representation(springs: &Vec<char>, broken_sections: &Vec<u8>) -> String {
-    springs.iter().collect::<String>() + &broken_sections.iter().map(|&s| s.to_string()).collect::<Vec<String>>().join(",")
+fn get_cache_representation(springs: &Vec<char>, broken_sections: &Vec<u8>, next_spring_can_be_broken: bool) -> String {
+    springs.iter().collect::<String>() + &broken_sections.iter().map(|&s| s.to_string()).collect::<Vec<String>>().join(",") + &next_spring_can_be_broken.to_string()
 }
 
 fn multiply_vector<T: std::clone::Clone>(input: &Vec<T>, amount: usize) -> Vec<T> {
