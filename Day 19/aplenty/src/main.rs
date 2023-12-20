@@ -127,18 +127,73 @@ fn main() {
     }
 
     // Part 2.
+    let mut ranges_in_progress: HashMap<String, Vec<PartRange>> = HashMap::new();
+
+    for workflow in workflows.keys() {
+        ranges_in_progress.insert(workflow.clone(), Vec::new());
+    }
+
+    ranges_in_progress.insert(String::from("in"), vec![PartRange::default()]);
+
+    let mut part_two_total: u64 = 0;
+
+    while !all_workflows_complete(&ranges_in_progress) {
+        let mut new_ranges: HashMap<String, Vec<PartRange>> = HashMap::new();
+
+        for (workflow_name, ranges) in ranges_in_progress.iter() {
+            if ranges.is_empty() {
+                continue;
+            }
+
+            let workflow = workflows.get(workflow_name).unwrap();
+
+            for range in ranges.iter() {
+                for condition in workflow.conditions.iter() {
+                    let category = condition.get_category();
+                    let pass_value = condition.get_pass_value();
+
+                    match condition.get_category() {
+                        'x' => {
+                            match condition.get_operator() {
+                                '<' => {
+                                    if range.x.start >= condition.get_pass_value() {
+                                        match new_ranges.get_mut(&condition.failure_workflow) {
+                                            Some(vec) => vec.push(range.clone()),
+                                            None => new_ranges.insert(condition.failure_workflow.clone(), vec![range.clone()])
+                                        }
+                                    }
+
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     println!("{}", part_one_total);
 }
 
-#[derive(Debug)]
+fn all_workflows_complete(workflows: &HashMap<String, Vec<PartRange>>) -> bool {
+    for ranges in workflows.values() {
+        if !ranges.is_empty() {
+            return false;
+        }
+    }
+
+    true
+}
+
+#[derive(Debug, Clone)]
 struct Workflow {
     name: String,
     conditions: Vec<Condition>,
     end_behaviour: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Condition {
     condition: String,
     failure_workflow: String,
@@ -164,7 +219,6 @@ impl Condition {
     fn is_passed(&self, value: usize) -> bool {
         match self.get_operator() {
             '<' => return value < self.get_pass_value(),
-            '=' => return value == self.get_pass_value(),
             '>' => return value > self.get_pass_value(),
             _ => panic!("Unsupported operator: {}", self.get_operator()),
         }
@@ -189,6 +243,40 @@ impl Part {
             _ => return None,
         }
     }
+}
+
+#[derive(Clone, PartialEq, Eq, Hash)]
+struct PartRange {
+    x: IntRange,
+    m: IntRange,
+    a: IntRange,
+    s: IntRange
+}
+
+impl PartRange {
+    fn get_associated_range(&self, category: char) -> Option<&IntRange> {
+        match category {
+            'x' => return Some(&self.x),
+            'm' => return Some(&self.m),
+            'a' => return Some(&self.a),
+            's' => return Some(&self.s),
+            _ => return None,
+        }
+    }
+}
+
+impl Default for PartRange {
+    fn default() -> PartRange {
+        let default_range = IntRange { start: 1, end: 4000 };
+
+        PartRange { x: default_range.clone(), m: default_range.clone(), a: default_range.clone(), s: default_range.clone() }
+    }
+}
+
+#[derive(Clone, PartialEq, Eq, Hash)]
+struct IntRange {
+    start: usize,
+    end: usize
 }
 
 enum Mode {
