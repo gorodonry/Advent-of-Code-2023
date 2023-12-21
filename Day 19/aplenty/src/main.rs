@@ -4,7 +4,7 @@ use std::fs;
 static CATEGORIES: &'static [char] = &['x', 'm', 'a', 's'];
 
 fn main() {
-    let file = fs::read_to_string("src/input.txt").unwrap();
+    let file = fs::read_to_string("src/test.txt").unwrap();
     let lines: Vec<&str> = file.split_terminator("\n").collect();
 
     let mut mode = Mode::InitialisingWorkflows;
@@ -135,45 +135,131 @@ fn main() {
 
     ranges_in_progress.insert(String::from("in"), vec![PartRange::default()]);
 
-    let mut part_two_total: u64 = 0;
+    let mut part_two_total: usize = 0;
 
     while !all_workflows_complete(&ranges_in_progress) {
         let mut new_ranges: HashMap<String, Vec<PartRange>> = HashMap::new();
 
-        for (workflow_name, ranges) in ranges_in_progress.iter() {
-            if ranges.is_empty() {
+        for (workflow_name, ranges) in ranges_in_progress.iter_mut() {            
+            if vec!["A", "R"].contains(&workflow_name.as_str()) {
                 continue;
             }
 
             let workflow = workflows.get(workflow_name).unwrap();
 
-            for range in ranges.iter() {
+            for range in ranges.iter_mut() {
                 for condition in workflow.conditions.iter() {
-                    let category = condition.get_category();
-                    let pass_value = condition.get_pass_value();
-
-                    match condition.get_category() {
-                        'x' => {
-                            match condition.get_operator() {
-                                '<' => {
-                                    if range.x.start >= condition.get_pass_value() {
-                                        match new_ranges.get_mut(&condition.failure_workflow) {
-                                            Some(vec) => vec.push(range.clone()),
-                                            None => new_ranges.insert(condition.failure_workflow.clone(), vec![range.clone()])
-                                        }
+                    if !range.all_ranges_valid() {
+                        break;
+                    }
+                    
+                    match condition.get_operator() {
+                        '<' => {
+                            if range.get_associated_range(condition.get_category()).unwrap().start >= condition.get_pass_value() {
+                                match new_ranges.get_mut(&condition.failure_workflow) {
+                                    Some(vec) => {
+                                        vec.push(range.clone());
                                     }
-
-
+                                    None => {
+                                        new_ranges.insert(condition.failure_workflow.clone(), vec![range.clone()]);
+                                    }
                                 }
+                            } else if range.get_associated_range(condition.get_category()).unwrap().end < condition.get_pass_value() {
+                                continue;
+                            } else {
+                                let mut upper_range = range.clone();
+                                
+                                let mut associated_range = upper_range.get_associated_range(condition.get_category()).unwrap().clone();
+                                associated_range.start = condition.get_pass_value();
+                                upper_range.update_associated_range(associated_range, condition.get_category());
+
+                                match new_ranges.get_mut(&condition.failure_workflow) {
+                                    Some(vec) => {
+                                        vec.push(upper_range);
+                                    }
+                                    None => {
+                                        new_ranges.insert(condition.failure_workflow.clone(), vec![upper_range]);
+                                    }
+                                }
+                                
+                                let mut associated_range = range.get_associated_range(condition.get_category()).unwrap().clone();
+                                associated_range.end = condition.get_pass_value() - 1;
+                                range.update_associated_range(associated_range, condition.get_category());
                             }
+                        }
+                        '>' => {
+                            if range.get_associated_range(condition.get_category()).unwrap().end <= condition.get_pass_value() {
+                                match new_ranges.get_mut(&condition.failure_workflow) {
+                                    Some(vec) => {
+                                        vec.push(range.clone());
+                                    }
+                                    None => {
+                                        new_ranges.insert(condition.failure_workflow.clone(), vec![range.clone()]);
+                                    }
+                                }
+                            } else if range.get_associated_range(condition.get_category()).unwrap().start > condition.get_pass_value() {
+                                continue;
+                            } else {
+                                let mut lower_range = range.clone();
+                                
+                                let mut associated_range = lower_range.get_associated_range(condition.get_category()).unwrap().clone();
+                                associated_range.end = condition.get_pass_value();
+                                lower_range.update_associated_range(associated_range, condition.get_category());
+                                
+                                match new_ranges.get_mut(&condition.failure_workflow) {
+                                    Some(vec) => {
+                                        vec.push(lower_range);
+                                    }
+                                    None => {
+                                        new_ranges.insert(condition.failure_workflow.clone(), vec![lower_range]);
+                                    }
+                                }
+                                
+                                let mut associated_range = range.get_associated_range(condition.get_category()).unwrap().clone();
+                                associated_range.start = condition.get_pass_value() + 1;
+                                range.update_associated_range(associated_range, condition.get_category());
+                            }
+                        }
+                        _ => panic!("Yeah, ummm, about that")
+                    }
+                }
+                
+                if range.all_ranges_valid() {
+                    match new_ranges.get_mut(&workflow.end_behaviour) {
+                        Some(vec) => {
+                            vec.push(range.clone());
+                        }
+                        None => {
+                            new_ranges.insert(workflow.end_behaviour.clone(), vec![range.clone()]);
                         }
                     }
                 }
             }
         }
+        
+        match new_ranges.get(&String::from("A")) {
+            Some(ranges) => {
+                for range in ranges.iter() {
+                    let x_combinations = calculate_sum(range.x.end) - calculate_sum(std::cmp::max(range.x.start - 1, 0));
+                    let m_combinations = calculate_sum(range.m.end) - calculate_sum(std::cmp::max(range.m.start - 1, 0));
+                    let a_combinations = calculate_sum(range.a.end) - calculate_sum(std::cmp::max(range.a.start - 1, 0));
+                    let s_combinations = calculate_sum(range.s.end) - calculate_sum(std::cmp::max(range.s.start - 1, 0));
+                    
+                    part_two_total += x_combinations * m_combinations * a_combinations * s_combinations;
+                }
+            }
+            None => ()
+        }
+        
+        ranges_in_progress = new_ranges;
     }
 
-    println!("{}", part_one_total);
+    println!("Part 1: {}", part_one_total);
+    println!("Part 2: {}", part_two_total);
+}
+
+fn calculate_sum(n: usize) -> usize {
+    (n * (n + 1)) / 2
 }
 
 fn all_workflows_complete(workflows: &HashMap<String, Vec<PartRange>>) -> bool {
@@ -263,6 +349,20 @@ impl PartRange {
             _ => return None,
         }
     }
+    
+    fn update_associated_range(&mut self, new_range: IntRange, category: char) {
+        match category {
+            'x' => self.x = new_range,
+            'm' => self.m = new_range,
+            'a' => self.a = new_range,
+            's' => self.s = new_range,
+            _ => ()
+        }
+    }
+    
+    fn all_ranges_valid(&self) -> bool {
+        self.x.is_valid() && self.m.is_valid() && self.a.is_valid() && self.s.is_valid()
+    }
 }
 
 impl Default for PartRange {
@@ -277,6 +377,12 @@ impl Default for PartRange {
 struct IntRange {
     start: usize,
     end: usize
+}
+
+impl IntRange {
+    fn is_valid(&self) -> bool {
+        self.start <= self.end
+    }
 }
 
 enum Mode {
